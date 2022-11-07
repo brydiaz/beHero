@@ -11,9 +11,9 @@ class Client():
         self.nickname = input("Choose your nickname: ")
         # Connecting To Server
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect(('127.0.0.1', 55557))
-        self.x = 0
-        self.y = 0
+        self.client.connect(('127.0.0.1', 55555))
+        self.score = 0
+
 
 
     
@@ -21,26 +21,27 @@ class Client():
     # Recibimos PETICIONES del server
     def receive(self):
         while True:
-            try:
-                # Receive Message From Server
-                # If 'NICK' Send Nickname
-                message = self.client.recv(1024).decode('ascii')
-                if message == 'NICK':
-                    self.client.send(self.nickname.encode('ascii'))
-                else:
-                    #Aqui el server nos pide que mostremos el board
-                    if len(message) > 300:
-                        hf.clear()
-                        print(message)
-                    else: #Si el server no nos manda un boarda, nos manda una posicion
-                        my_pos = eval(message)
-                        self.x = my_pos[0]
-                        self.y = my_pos[1]
-            except:
-                # Error
-                print("An error occured!")
-                self.client.close()
-                break
+
+            # Receive Message From Server
+            # If 'NICK' Send Nickname
+            message = self.client.recv(1024).decode('ascii')
+            if message == 'NICK':
+                self.client.send(self.nickname.encode('ascii'))
+            else:
+                #Aqui el server nos pide que mostremos el board
+                if len(message) > 300:
+                    hf.clear()
+                    print(message[:len(message)-2])
+                    print('\n')
+                    enemys = message[len(message)-2:]
+                    print('Personas restantes por salvar:'+enemys)
+                    print('Personas salvadas por '+self.nickname+' '+str(self.score))
+                else: #Si el server no nos manda un boarda, nos manda una posicion
+                    if message[:5] == 'MYPOS':
+                        self.score = int(message[5:])
+
+
+
         # Enviamos mensajes
     def write(self):
         while True:

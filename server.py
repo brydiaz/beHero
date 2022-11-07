@@ -2,12 +2,14 @@ import socket
 import threading
 import numpy as np, sys
 import time
+import help_funcs as hf
 class Server:
 
     def __init__(self, game):
         self.game = game
         self.host = '127.0.0.1'
-        self.port = 55557
+        self.port = 55555
+        self.quamtum = 0.3
 
         # Starting Server
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,7 +20,9 @@ class Server:
         self.clients = []
         self.nicknames = []
         self.nicks_and_pos = []
-        act_views = threading.Thread(target=self.send_views)
+        self.nick_and_score = {}
+
+        act_views = threading.Thread(target=self.act_game)
         act_views.start()
 
     # enviamos a todos
@@ -36,12 +40,15 @@ class Server:
                 nick = message[:len(message)-2]# y [:-2] obtenemos "bryan"
                 actual_pos = self.actual_pos(nick)
                 future_pos = self.calculate_future_pos(move, actual_pos)
-                if self.game.validate_move(future_pos):
-                    client.send(str(future_pos).encode('ascii'))
+                validation = self.game.validate_move(future_pos)
+                if validation[0]:
                     self.game.make_move(actual_pos[0],actual_pos[1],0)
                     self.make_move(future_pos, nick)
-
-
+                    if validation[1]:
+                        old = self.nick_and_score[nick] 
+                        self.nick_and_score[nick] = old + 1 
+                        string_to_send = 'MYPOS'+str(self.nick_and_score[nick])
+                        client.send(string_to_send.encode('ascii'))
             except:
                 # Removing And Closing Clients
                 index = self.clients.index(client)
@@ -56,9 +63,7 @@ class Server:
     def receive(self):
         while True:
             # Aceptamos conexion
-            print("...esperando conexiones!")
             client, address = self.server.accept()
-            print("Se ha unido {}".format(str(address)))
             # pedimos el nick
             client.send('NICK'.encode('ascii'))
             #Guardamos el nick y el cliente
@@ -66,22 +71,30 @@ class Server:
             self.nicknames.append(nickname)
             self.clients.append(client)
             #prints uno al server, y luego avisamos a todos
-            print("con user name: {}".format(nickname))
             #le damos una posicion libre al azar
             pos = self.game.give_empty_pos()
             client.send(str(pos).encode('ascii'))
             self.nicks_and_pos.append([nickname, pos])
             print([nickname, pos])
             self.game.make_move(pos[0],pos[1],1)
+            self.nick_and_score[nickname] = 0
             # Start Handling Thread For Client
             thread = threading.Thread(target=self.handle, args=(client,))
             thread.start()
 
-    def send_views(self):
+    def act_game(self):
         #Mandamos a todos el estado actual del board
-        while True:
-            self.broadcast(str(self.game.get_board()).encode('ascii'))
-            time.sleep(1)
+        control = True
+        while control:
+            enemys = self.check_enemys_in_board() #Validamos enemigos
+            self.print_server_status()
+            self.broadcast((str(self.game.get_board())+str(enemys)).encode('ascii')) #Enviamos el estado del board y sus enemigos
+            time.sleep(self.quamtum) #Nos dormimos, aca mediamos la sincronizacion
+            if enemys == 0:
+                control = False
+            hf.clear() #Limpiamos pantalla
+        self.end_game()
+        
     
     def actual_pos(self, nick):
         for i in self.nicks_and_pos:
@@ -107,3 +120,36 @@ class Server:
                 i[1] = move
         self.game.make_move(move[0],move[1],1)
 
+    def check_enemys_in_board(self):
+        enemys = 0
+        for i in self.game.get_board():
+            for j in i:
+                if j == 2:
+                    enemys += 1
+
+        return enemys
+
+    
+    def print_server_status(self):
+        print('--------------------------------------------------------')
+        print('BIENVENIDOS A beHERO HOY TENEMOS '+str(self.check_enemys_in_board())+ ' PERSONAS POR SALVAR')
+        print(self.game.get_board())
+        print('NUESTROS HEROES JUGANDO!:')
+        for i in self.nicknames:
+            print('--'+i+' PERSONAS SALVADAS: '+str(self.nick_and_score[i])+'--')
+    
+    def end_game(self):
+        
+        print("SE HA ACABADO HEROES!!")
+        print("TODAS LAS PERSONAS HAN SIDO SALVADAS!!")
+        print("Y EL MEJOR HEROE HA SIDO....!")
+
+        print('-----------------------------------------')
+        print(max(self.nick_and_score))
+        print('-----------------------------------------')
+        print('GRACIAS POR JUGAR!')
+
+        for i in self.clients:
+            i.close()
+        self.server.close()
+        exit()
