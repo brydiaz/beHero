@@ -1,5 +1,6 @@
 import socket
 import threading
+import help_funcs as hf
 from pynput import keyboard
 
 
@@ -29,6 +30,7 @@ class Client():
                 else:
                     #Aqui el server nos pide que mostremos el board
                     if len(message) > 300:
+                        hf.clear()
                         print(message)
                     else: #Si el server no nos manda un boarda, nos manda una posicion
                         my_pos = eval(message)
