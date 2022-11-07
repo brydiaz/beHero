@@ -145,7 +145,7 @@ class Server:
         print("Y EL MEJOR HEROE HA SIDO....!")
 
         print('-----------------------------------------')
-        print(max(self.nick_and_score))
+        print(max(self.nick_and_score, key=self.nick_and_score.get))
         print('-----------------------------------------')
         print('GRACIAS POR JUGAR!')
 
