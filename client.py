@@ -1,7 +1,6 @@
 import socket
 import threading
-
-
+from pynput import keyboard
 
 
 class Client():
@@ -11,9 +10,11 @@ class Client():
         self.nickname = input("Choose your nickname: ")
         # Connecting To Server
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect(('127.0.0.1', 55559))
+        self.client.connect(('127.0.0.1', 55557))
         self.x = 0
         self.y = 0
+
+
     
         
     # Recibimos PETICIONES del server
@@ -50,6 +51,25 @@ class Client():
         receive_thread.start()
 
         write_thread = threading.Thread(target=self.write)
-        write_thread.start()
+
+        #Lee los movimientos
+        move_thread = threading.Thread(target=self.read_move)
+        move_thread.start()
+
+    def make_move(self, key):
+        try:
+            key = key.char
+            self.client.send((self.nickname+','+key).encode('ascii'))
+        except AttributeError:
+            pass
+
+    def read_move(self):
+        with keyboard.Listener(
+            on_press=self.make_move) as listener:
+            listener.join()
+            
+                
+
+
 client = Client()
 client.start()
