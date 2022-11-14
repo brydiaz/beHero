@@ -3,7 +3,6 @@ import threading
 import help_funcs as hf
 from pynput import keyboard
 
-
 class Client():
     
     def __init__(self):
@@ -14,10 +13,6 @@ class Client():
         self.client.connect(('127.0.0.1', 55555))
         self.score = 0
 
-
-
-    
-        
     # Recibimos PETICIONES del server
     def receive(self):
         while True:
@@ -39,8 +34,6 @@ class Client():
                 else: #Si el server no nos manda un boarda, nos manda una posicion
                     if message[:5] == 'MYPOS':
                         self.score = int(message[5:])
-
-
 
         # Enviamos mensajes
     def write(self):
@@ -71,8 +64,5 @@ class Client():
             on_press=self.make_move) as listener:
             listener.join()
             
-                
-
-
 client = Client()
 client.start()
