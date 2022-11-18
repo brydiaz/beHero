@@ -2,7 +2,10 @@ import socket
 import threading
 import help_funcs as hf
 from pynput import keyboard
+<<<<<<< HEAD
 import clientUDP
+=======
+>>>>>>> 5ee9723de0e340d6d3d93be1dc5c9310b7750ca0
 
 class Client():
     
@@ -14,8 +17,12 @@ class Client():
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, 55555))
         self.score = 0
+<<<<<<< HEAD
         self.voice = clientUDP.Client(self.nickname,self.host)
         self.start()
+=======
+
+>>>>>>> 5ee9723de0e340d6d3d93be1dc5c9310b7750ca0
     # Recibimos PETICIONES del server
     def receive(self):
         while True:
@@ -37,6 +44,15 @@ class Client():
                     if message[:5] == 'MYPOS':
                         self.score = int(message[5:])
 
+<<<<<<< HEAD
+=======
+        # Enviamos mensajes
+    def write(self):
+        while True:
+            message = '{}: {}'.format(self.nickname, input(''))
+            self.client.send(message.encode('ascii'))
+
+>>>>>>> 5ee9723de0e340d6d3d93be1dc5c9310b7750ca0
     def start(self):
         # Starting Threads For Listening And Writing
         receive_thread = threading.Thread(target=self.receive)
@@ -58,7 +74,8 @@ class Client():
             on_press=self.make_move) as listener:
             listener.join()
             
-                
-
-
 client = Client()
+<<<<<<< HEAD
+=======
+client.start()
+>>>>>>> 5ee9723de0e340d6d3d93be1dc5c9310b7750ca0
