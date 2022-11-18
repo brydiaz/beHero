@@ -2,7 +2,7 @@ import socket
 import threading
 import help_funcs as hf
 from pynput import keyboard
-
+import clientUDP
 
 class Client():
     
@@ -10,18 +10,15 @@ class Client():
         # Choosing Nickname
         self.nickname = input("Choose your nickname: ")
         # Connecting To Server
+        self.host = input('Digite el host donde se desea correr!: ')
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect(('127.0.0.1', 55555))
+        self.client.connect((self.host, 55555))
         self.score = 0
-
-
-
-    
-        
+        self.voice = clientUDP.Client(self.nickname,self.host)
+        self.start()
     # Recibimos PETICIONES del server
     def receive(self):
         while True:
-
             # Receive Message From Server
             # If 'NICK' Send Nickname
             message = self.client.recv(1024).decode('ascii')
@@ -40,24 +37,14 @@ class Client():
                     if message[:5] == 'MYPOS':
                         self.score = int(message[5:])
 
-
-
-        # Enviamos mensajes
-    def write(self):
-        while True:
-            message = '{}: {}'.format(self.nickname, input(''))
-            self.client.send(message.encode('ascii'))
-
     def start(self):
         # Starting Threads For Listening And Writing
         receive_thread = threading.Thread(target=self.receive)
         receive_thread.start()
-
-        write_thread = threading.Thread(target=self.write)
-
         #Lee los movimientos
         move_thread = threading.Thread(target=self.read_move)
         move_thread.start()
+        self.voice = clientUDP.Client(self.nickname,self.host)
 
     def make_move(self, key):
         try:
@@ -75,4 +62,3 @@ class Client():
 
 
 client = Client()
-client.start()

@@ -3,14 +3,17 @@ import threading
 import numpy as np, sys
 import time
 import help_funcs as hf
+import serverUDP
+
 class Server:
 
     def __init__(self, game):
         self.game = game
-        self.host = '127.0.0.1'
+        self.host = input('Digite el host donde se desea correr!: ')
         self.port = 55555
         self.quamtum = 0.3
-
+        self.serverUDP = serverUDP.Server(self.host)
+    
         # Starting Server
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((self.host, self.port))
@@ -25,6 +28,9 @@ class Server:
         act_views = threading.Thread(target=self.act_game)
         act_views.start()
 
+        recieve = threading.Thread(target=self.receive)
+        recieve.start()
+        
     # enviamos a todos
     def broadcast(self, message):
         for client in self.clients:
@@ -132,7 +138,7 @@ class Server:
     
     def print_server_status(self):
         print('--------------------------------------------------------')
-        print('BIENVENIDOS A beHERO HOY TENEMOS '+str(self.check_enemys_in_board())+ ' PERSONAS POR SALVAR')
+        print('BIENVENIDOS A beHERO HOY TENEMOS '+str(self.check_enemys_in_board())+ ' PERSONAS POR SALVAR'+ 'JUGAMOS EN: ' +self.host)
         print(self.game.get_board())
         print('NUESTROS HEROES JUGANDO!:')
         for i in self.nicknames:

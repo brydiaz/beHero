@@ -1,5 +1,6 @@
 import numpy as np
 import random as r
+
 class Game:
     def __init__(self, len_matrix):
         self.len_matrix = len_matrix

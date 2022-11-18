@@ -1,5 +1,7 @@
-
+import socket
 from os import system, name
+
+
  
 def clear():
     if name == 'nt':
@@ -7,3 +9,4 @@ def clear():
 
     else:
         _ = system('clear')
+

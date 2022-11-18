@@ -5,7 +5,6 @@ if len(sys.argv) > 1:
     len_matrix = int(sys.argv[1])
     game = g.Game(len_matrix)
     server = sv.Server(game)
-    server.receive()
 
 else:
     print("Se debe introducir el largo del tablero")
